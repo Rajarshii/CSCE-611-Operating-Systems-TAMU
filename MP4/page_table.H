@@ -18,7 +18,16 @@
 /* DEFINES */
 /*--------------------------------------------------------------------------*/
 
-/* -- (none) -- */
+#define PDE_OFFSET 22
+#define PTE_OFFSET 12
+#define PTE_IDX_MASK 0x3FF
+#define PDE_FLAG_CLEAR_MASK 0xFFFFF000
+
+#define VALID_MASK_EN 0x1
+#define RW_MASK_EN 0x2
+#define UK_MASK_EN 0x4
+
+#define DEBUGGER_EN 0
 
 /*--------------------------------------------------------------------------*/
 /* INCLUDES */
@@ -52,6 +61,7 @@ private:
     static ContFramePool * kernel_mem_pool;    /* Frame pool for the kernel memory */
     static ContFramePool * process_mem_pool;   /* Frame pool for the process memory */
     static unsigned long   shared_size;        /* size of shared address space */
+    static VMPool        * vm_pool_hptr;       /* Head Pointer to the Virtual Memory Pool LL*/
     
     /* DATA FOR CURRENT PAGE TABLE */
     unsigned long        * page_directory;     /* where is page directory located? */

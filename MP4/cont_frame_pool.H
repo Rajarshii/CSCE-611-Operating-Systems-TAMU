@@ -42,8 +42,14 @@ class ContFramePool {
     
 private:
     /* -- DEFINE YOUR CONT FRAME POOL DATA STRUCTURE(s) HERE. */
-    
-    
+
+    unsigned char * frameStateBitmap; // Tracking frame state using bitmap
+    unsigned int numFreeFrames;       // Number of available free frames in te pool
+    unsigned long base_frame_no;      // Base frame of the pool
+    unsigned long framePoolSize;      // Size of the framepool
+    unsigned long info_frame_no;      // Location of info frame
+    ContFramePool* next;              // pointer to next frame pool
+    static ContFramePool* head;       // Pointer to the head of the linked-list    
     
     /* ---- STATE MANAGEMENT */
     
@@ -52,6 +58,12 @@ private:
     FrameState get_state(unsigned long _frame_no);
     void set_state(unsigned long _frame_no, FrameState _state);
     
+    /**
+     * Private function to release all frame of a given pool.
+     * Called from inside static function release_frames after identifying
+     * the framepool a frame belongs to.
+     */
+    void release_frame_pool(unsigned long _first_frame_no);
     
 public:
 

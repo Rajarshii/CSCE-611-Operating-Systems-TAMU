@@ -37,6 +37,13 @@
 /* We need this to break a circular include sequence. */
 class PageTable;
 
+// Keep track of each region in VM
+struct AllocRegion
+{
+	unsigned long  base_address;
+	unsigned long  size;
+};
+
 /*--------------------------------------------------------------------------*/
 /* V M  P o o l  */
 /*--------------------------------------------------------------------------*/
@@ -44,8 +51,18 @@ class PageTable;
 class VMPool { /* Virtual Memory Pool */
 private:
    /* -- DEFINE YOUR VIRTUAL MEMORY POOL DATA STRUCTURE(s) HERE. */
+   unsigned long base_address;
+   unsigned long size;
+   unsigned long num_vmem_regions;				// Number of virtual memory regions
+   unsigned long available_mem;					// Size of memory region available
+   
+   ContFramePool*             frame_pool;
+   PageTable*                 page_table;   
+   struct AllocRegion*        alloc_regions;		// Pointer to virtual memory region allocation
 
 public:
+   VMPool* vm_pool_next_ptr;
+
    VMPool(unsigned long  _base_address,
           unsigned long  _size,
           ContFramePool *_frame_pool,
