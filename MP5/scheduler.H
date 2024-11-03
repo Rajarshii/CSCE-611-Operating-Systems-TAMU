@@ -20,6 +20,8 @@
 /*--------------------------------------------------------------------------*/
 
 #include "thread.H"
+#include "interrupts.H"
+#include "console.H"
 
 /*--------------------------------------------------------------------------*/
 /* !!! IMPLEMENTATION HINT !!! */
@@ -49,6 +51,93 @@
      such as 'FIFOScheduler'.)
     
  */
+/**
+ * Thread Control Block - Contains the thread and the pointer to the next TCB.
+ * Normally, I would make thread and next private and provide interfaces to update/ read them.
+ * But for the sake of simplicity here, I haven't done that.
+ */
+
+class ThreadControlBlock {
+public:
+   Thread* thread;                  /* Thread control block*/
+   ThreadControlBlock* next;        /* Pointer to the next TCB in the FIFO*/
+   /**
+    * Default Constructor
+    */
+   ThreadControlBlock() : thread{nullptr}, next{nullptr} {}   
+   /**
+    * Initialize with thread
+    */
+   ThreadControlBlock(Thread* _thread) : thread{_thread}, next{nullptr} {}   
+};
+
+/**
+ * This is the ready queue implementation.
+ * It is implemented as a simple linked list. 
+ */
+
+class ReadyQueue {
+private:
+   ThreadControlBlock* head;
+
+public:
+   /**
+    * Default Constructor
+    */
+   ReadyQueue() : head{nullptr} {}
+
+   /**
+    * Destructor - need this in case it goes out of scope, and we need to free memory.
+    * Normally I would've used unique_pointer or smart_pointer, but libraries aren't available.
+    * Memory leaks are the worst.
+    * 
+    */
+   ~ReadyQueue() {
+      while(head != nullptr) {
+         ThreadControlBlock* temp = head;
+         head = head->next;
+         delete temp;
+      }
+   }
+
+   /**
+    * Add thread to queue at the end of the list
+    */
+   void enqueue(Thread* _thread) {
+      // Empty Queue
+      if(head == nullptr) {
+         head = new ThreadControlBlock(_thread);
+      }
+      else {
+         ThreadControlBlock* current = head;
+
+         while(current->next != nullptr) {
+            current = current->next;
+         }
+         
+         current->next = new ThreadControlBlock(_thread);
+      }
+   }
+
+   /**
+    * Remove element(thread) from top of queue (head)
+    */
+   Thread* dequeue() {
+      // Empty queue
+      if(head == nullptr) return nullptr;
+
+      ThreadControlBlock* current = head; 
+      
+      Thread* top = current->thread;
+
+      head = head->next;
+
+      delete current;
+
+      return top;
+   }
+
+};
 
 /*--------------------------------------------------------------------------*/
 /* SCHEDULER */
@@ -56,7 +145,18 @@
 
 class Scheduler {
 
-  /* The scheduler may need private members... */
+/* The scheduler may need private members... */
+private:
+   ReadyQueue rdy_q;
+   unsigned int rdy_q_size;
+
+/**
+ * A lot of repeated use of interrupt enable logic - hence I decided to create an API to it.
+ * Made it protected, so as to not make it publicly accessible. 
+ */
+protected:
+   virtual void disable_interrupts();
+   virtual void enable_interrupts();
   
 public:
 
@@ -91,6 +191,54 @@ public:
   
 };
 	
-	
+class RRScheduler : public Scheduler, public InterruptHandler {
+private:
+   /**
+    * Private members, similar to the Scheduler.
+    * Ideally, the queue should have been part of an abstract class, or a protected member, but, oh well..
+    */
+   ReadyQueue rr_rdy_q;
+   unsigned int rr_rdy_q_size;
+   /**
+    * Keeping track of ticks
+    */
+   unsigned int tick;
+   unsigned int Hz;
+
+   void set_frequency(unsigned int _Hz);
+
+public:
+
+   RRScheduler();
+
+   /**
+    * Custom interrupt handler for getting and receiving ticks.
+    * Overrides the handle interrupt of class InterruptHandler.
+    */
+   virtual void handle_interrupt(REGS* _regs);
+
+   /* Called by the currently running thread in order to give up the CPU. 
+      The scheduler selects the next thread from the ready queue to load onto 
+      the CPU, and calls the dispatcher function defined in 'Thread.H' to
+      do the context switch. */
+   virtual void yield() override;
+
+   /* Add the given thread to the ready queue of the scheduler. This is called
+      for threads that were waiting for an event to happen, or that have 
+      to give up the CPU in response to a preemption. */
+   virtual void resume(Thread * _thread) override;
+
+   /* Make the given thread runnable by the scheduler. This function is called
+      after thread creation. Depending on implementation, this function may 
+      just add the thread to the ready queue, using 'resume'. */
+   virtual void add(Thread * _thread) override;
+
+   /* Remove the given thread from the scheduler in preparation for destruction
+      of the thread. 
+      Graciously handle the case where the thread wants to terminate itself.*/
+   virtual void terminate(Thread * _thread) override;
+
+
+};
 
 #endif

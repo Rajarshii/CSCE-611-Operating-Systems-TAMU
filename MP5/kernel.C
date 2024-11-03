@@ -23,17 +23,23 @@
 
 /* -- COMMENT/UNCOMMENT THE FOLLOWING LINE TO EXCLUDE/INCLUDE SCHEDULER CODE */
 
-//#define _USES_SCHEDULER_
+#define _USES_SCHEDULER_
 /* This macro is defined when we want to force the code below to use
    a scheduler.
    Otherwise, no scheduler is used, and the threads pass control to each
    other in a co-routine fashion.
 */
 
+//#define _USES_RR_SCHEDULER_
+/**
+ * Macro is defined when we want to use round robin scheduler instead of
+ * the basic FIFO Scheduler.
+ * Note: This must be used in conjuction with _USES_SCHEDULER_ for correctness.
+ */
 
 /* -- UNCOMMENT THE FOLLOWING LINE TO MAKE THREADS TERMINATING */
 
-//#define _TERMINATING_FUNCTIONS_
+#define _TERMINATING_FUNCTIONS_
 /* This macro is defined when we want the thread functions to return, and so
    terminate their thread.
    Otherwise, the thread functions don't return, and the threads run forever.
@@ -102,8 +108,13 @@ void operator delete[] (void * p) {
 
 #ifdef _USES_SCHEDULER_
 
-/* -- A POINTER TO THE SYSTEM SCHEDULER */
+#ifdef _USES_RR_SCHEDULER_
+/* -- A POINTER TO THE ROUND ROBIN SCHEDULER */
+RRScheduler* SYSTEM_SCHEDULER;
+#else 
+/* -- A POINTER TO THE FIFO SCHEDULER */
 Scheduler * SYSTEM_SCHEDULER;
+#endif
 
 #endif
 
@@ -250,16 +261,21 @@ int main() {
     /* Question: Why do we want a timer? We have it to make sure that 
                  we enable interrupts correctly. If we forget to do it,
                  the timer "dies". */
+#ifndef _USES_RR_SCHEDULER_ 
 
     SimpleTimer timer(100); /* timer ticks every 10ms. */
     InterruptHandler::register_handler(0, &timer);
     /* The Timer is implemented as an interrupt handler. */
+#endif
 
 #ifdef _USES_SCHEDULER_
 
     /* -- SCHEDULER -- IF YOU HAVE ONE -- */
- 
+#ifdef _USES_RR_SCHEDULER_ 
+    SYSTEM_SCHEDULER = new RRScheduler();
+#else
     SYSTEM_SCHEDULER = new Scheduler();
+#endif
 
 #endif
 

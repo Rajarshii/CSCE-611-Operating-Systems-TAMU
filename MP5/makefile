@@ -20,7 +20,7 @@ clean:
 	rm -f *.o *.bin
 
 run:
-	qemu-system-x86_64 -kernel kernel.bin 
+	qemu-system-x86_64 -kernel kernel.bin -serial stdio
 	
 debug:
 	qemu-system-x86_64 -s -S -kernel kernel.bin
