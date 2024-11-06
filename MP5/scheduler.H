@@ -155,8 +155,8 @@ private:
  * Made it protected, so as to not make it publicly accessible. 
  */
 protected:
-   virtual void disable_interrupts();
-   virtual void enable_interrupts();
+   inline void disable_interrupts();
+   inline void enable_interrupts();
   
 public:
 
