@@ -1,10 +1,10 @@
 /*
      File        : nonblocking_disk.H
 
-     Author      : 
+     Author      : Rajarshi Das
 
-     Date        : 
-     Description : 
+     Date        : MM/DD/2024
+     Description : Non Blocking Disk
 
 */
 
@@ -22,6 +22,9 @@
 /*--------------------------------------------------------------------------*/
 
 #include "simple_disk.H"
+#include "thread.H"
+#include "queue.H"
+#include "scheduler.H"
 
 /*--------------------------------------------------------------------------*/
 /* DATA STRUCTURES */ 
@@ -34,6 +37,26 @@
 /*--------------------------------------------------------------------------*/
 
 class NonBlockingDisk : public SimpleDisk {
+private:
+   Queue<Thread>* blocked_thread_q;    // Blocked Thread Queue
+   unsigned int blocked_thread_qsize;  // Size of the blocked thread queue
+
+   /**
+    * Check if there are blocked threads in the queue.
+    */
+   bool check_blocked_threads();
+
+   /**
+    * Return the blocked thread at the top of the queue.
+    */
+   Thread* pop_thread();
+
+protected:
+   /**
+    * Overriden wait until ready function. 
+    */
+   void wait_until_ready() override;
+
 public:
    NonBlockingDisk(DISK_ID _disk_id, unsigned int _size); 
    /* Creates a NonBlockingDisk device with the given size connected to the 
@@ -51,6 +74,10 @@ public:
    virtual void write(unsigned long _block_no, unsigned char * _buf);
    /* Writes 512 Bytes from the buffer to the given block on the disk. */
 
+   /**
+    * Declare the scheduler as a friend class. 
+    */
+   friend class Scheduler;
 };
 
 #endif

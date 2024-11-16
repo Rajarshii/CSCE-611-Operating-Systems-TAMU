@@ -19,7 +19,7 @@
 
 /* -- COMMENT/UNCOMMENT THE FOLLOWING LINE TO EXCLUDE/INCLUDE SCHEDULER CODE */
 
-//#define _USES_SCHEDULER_
+#define _USES_SCHEDULER_
 /* This macro is defined when we want to force the code below to use 
    a scheduler.
    Otherwise, no scheduler is used, and the threads pass control to each 
@@ -53,7 +53,9 @@
 #endif
 
 #include "simple_disk.H"    /* DISK DEVICE */
-                            /* YOU MAY NEED TO INCLUDE nonblocking_disk.H
+                            /* YOU MAY NEED TO INCLUDE nonblocking_disk.H*/
+#include "nonblocking_disk.H"
+
 /*--------------------------------------------------------------------------*/
 /* MEMORY MANAGEMENT */
 /*--------------------------------------------------------------------------*/
@@ -79,7 +81,7 @@ void * operator new[] (size_t size) {
 }
 
 //replace the operator "delete"
-void operator delete (void * p) {
+void operator delete (void * p, size_t s) { // TODO: Notice this change
     MEMORY_POOL->release((unsigned long)p);
 }
 
@@ -104,7 +106,8 @@ Scheduler * SYSTEM_SCHEDULER;
 /*--------------------------------------------------------------------------*/
 
 /* -- A POINTER TO THE SYSTEM DISK */
-SimpleDisk * SYSTEM_DISK;
+//SimpleDisk * SYSTEM_DISK;
+NonBlockingDisk * SYSTEM_DISK;
 
 #define SYSTEM_DISK_SIZE (10 MB)
 
@@ -292,7 +295,8 @@ int main() {
 
     /* -- DISK DEVICE -- */
 
-    SYSTEM_DISK = new SimpleDisk(DISK_ID::MASTER, SYSTEM_DISK_SIZE);
+    //SYSTEM_DISK = new SimpleDisk(DISK_ID::MASTER, SYSTEM_DISK_SIZE);
+    SYSTEM_DISK = new NonBlockingDisk(DISK_ID::MASTER, SYSTEM_DISK_SIZE);
    
     /* NOTE: The timer chip starts periodically firing as 
              soon as we enable interrupts.
@@ -308,25 +312,26 @@ int main() {
     Console::puts("Hello World!\n");
 
     /* -- LET'S CREATE SOME THREADS... */
+    const int STACK_SIZE = (4 KB);
 
     Console::puts("CREATING THREAD 1...\n");
-    char * stack1 = new char[1024];
-    thread1 = new Thread(fun1, stack1, 1024);
+    char * stack1 = new char[STACK_SIZE];
+    thread1 = new Thread(fun1, stack1, STACK_SIZE);
     Console::puts("DONE\n");
 
     Console::puts("CREATING THREAD 2...");
-    char * stack2 = new char[1024];
-    thread2 = new Thread(fun2, stack2, 1024);
+    char * stack2 = new char[STACK_SIZE];
+    thread2 = new Thread(fun2, stack2, STACK_SIZE);
     Console::puts("DONE\n");
 
     Console::puts("CREATING THREAD 3...");
-    char * stack3 = new char[1024];
-    thread3 = new Thread(fun3, stack3, 1024);
+    char * stack3 = new char[STACK_SIZE];
+    thread3 = new Thread(fun3, stack3, STACK_SIZE);
     Console::puts("DONE\n");
 
     Console::puts("CREATING THREAD 4...");
-    char * stack4 = new char[1024];
-    thread4 = new Thread(fun4, stack4, 1024);
+    char * stack4 = new char[STACK_SIZE];
+    thread4 = new Thread(fun4, stack4, STACK_SIZE);
     Console::puts("DONE\n");
 
 #ifdef _USES_SCHEDULER_
