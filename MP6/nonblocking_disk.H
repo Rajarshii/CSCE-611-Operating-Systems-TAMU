@@ -15,7 +15,7 @@
 /* DEFINES */
 /*--------------------------------------------------------------------------*/
 
-/* -- (none) -- */
+#define MAX_DISK_DELAY 2
 
 /*--------------------------------------------------------------------------*/
 /* INCLUDES */
@@ -30,7 +30,7 @@
 /* DATA STRUCTURES */ 
 /*--------------------------------------------------------------------------*/
 
-/* -- (none) -- */
+static int DISK_DELAY = MAX_DISK_DELAY;
 
 /*--------------------------------------------------------------------------*/
 /* N o n B l o c k i n g D i s k  */
@@ -52,6 +52,11 @@ private:
    Thread* pop_thread();
 
 protected:
+   /**
+    * Overriden is_ready( ) function.
+    */
+   virtual bool is_ready() override;
+
    /**
     * Overriden wait until ready function. 
     */

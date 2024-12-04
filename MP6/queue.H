@@ -23,7 +23,7 @@ private:
     struct Node {
         T* data;                  
         Node* next;
-        Node(T* _thread) : data{_thread}, next{nullptr} {}   
+        Node(T* _data) : data{_data}, next{nullptr} {}   
     };
     Node* head;
 
@@ -50,10 +50,10 @@ public:
    /**
     * Add data to queue at the end of the list
     */
-   void enqueue(T* _thread) {
+   void enqueue(T* _data) {
       // Empty Queue
       if(head == nullptr) {
-         head = new Node(_thread);
+         head = new Node(_data);
       }
       else {
          Node* current = head;
@@ -62,7 +62,7 @@ public:
             current = current->next;
          }
          
-         current->next = new Node(_thread);
+         current->next = new Node(_data);
       }
    }
 
