@@ -151,7 +151,7 @@ void exercise_file_system(FileSystem* _file_system, unsigned int _iteration_no) 
 		char result1[30];
 		assert(file1.Read(20, result1) == 20);
 		for (int i = 0; i < 20; i++) {
-			assert(result1[i] == (_iteration_no % 2 == 0) ? STRING1[i] : STRING2[i]);
+			assert(result1[i] == ((_iteration_no % 2 == 0) ? STRING1[i] : STRING2[i]));
 		}
 
 		/* -- Read from File 2 and check result -- */
@@ -159,7 +159,7 @@ void exercise_file_system(FileSystem* _file_system, unsigned int _iteration_no) 
 		char result2[30];
 		assert(file2.Read(20, result2) == 20);
 		for (int i = 0; i < 20; i++) {
-			assert(result2[i] == (_iteration_no % 2 == 0) ? STRING2[i] : STRING1[i]);
+			assert(result2[i] == ((_iteration_no % 2 == 0) ? STRING2[i] : STRING1[i]));
 		}
 		Console::puts("SUCCESS!!\n");
 

@@ -18,7 +18,9 @@
 /* DEFINES */
 /*--------------------------------------------------------------------------*/
 
-/* -- (none) -- */
+#define BLOCK_ID_INODE		0
+#define BLOCK_ID_FREELIST	1
+#define EMPTY_MARKER		(signed)0xFFFFFFFF		// To denote -1
 
 /*--------------------------------------------------------------------------*/
 /* INCLUDES */
@@ -31,6 +33,12 @@
 /*--------------------------------------------------------------------------*/
 
 class FileSystem;
+
+/*--------------------------------------------------------------------------*/
+/* EXTERNS */
+/*--------------------------------------------------------------------------*/
+
+extern class FileSystem* FILE_SYSTEM;
 
 /*--------------------------------------------------------------------------*/
 /* DATA STRUCTURES */
@@ -47,6 +55,8 @@ private:
 
 	/* You will need additional information in the inode, such as allocation
 	   information. */
+	unsigned long block_id;		// Block ID where the file is located.
+	unsigned long file_size;	// Size of the stored file.
 
 	FileSystem* fs; // It may be handy to have a pointer to the File system.
 	// For example when you need a new block or when you want
@@ -91,8 +101,8 @@ private:
 	   If you reserve one block to store the "free list", you can handle a file system up to
 	   256kB. (Large enough for a proof of concept.) */
 
-	   // short GetFreeInode();
-	   // int GetFreeBlock();
+	   short GetFreeInode();
+	   int GetFreeBlock();
 	   /* It may be helpful to two functions to hand out free inodes in the inode list and free
 		  blocks. These functions also come useful to class Inode and File. */
 
@@ -120,5 +130,39 @@ public:
 
 	bool DeleteFile(int _file_id);
 	/* Delete file with given id in the file system; free any disk block occupied by the file. */
+
+	// Custom Functions for Reading and Writing inode list and free block list
+
+	/**
+	 * Read the Inode from Disk
+	 */
+	void ReadInode();
+
+	/**
+	 * Write the Inode to Disk
+	 */
+	void WriteInode();
+
+	/**
+	 * Read Free Block List from disk
+	 */
+	void ReadFreeBlockList();
+
+	/**
+	 * Write Free Block List to Disk
+	 */
+	void WriteFreeBlockList();
+
+	// Also create functions to read and write block to disk.
+
+	/**
+	 * Read Block from the disk
+	 */
+	void ReadBlock(unsigned long _block_id, unsigned char* _cache);
+
+	/**
+	 * Write Block to disk
+	 */
+	void WriteBlock(unsigned long _block_id, unsigned char* _cache);
 };
 #endif
