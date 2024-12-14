@@ -68,7 +68,7 @@ FileSystem::~FileSystem() {
 /*--------------------------------------------------------------------------*/
 
 int FileSystem::GetFreeBlock() {
-    for(unsigned int id = 0; id < size; ++id) { // TODO : We can skip checking the entire disk
+    for(unsigned int id = 0; id < SimpleDisk::BLOCK_SIZE; ++id) { 
         if(free_blocks[id] == 0) {
             return id;
         }
